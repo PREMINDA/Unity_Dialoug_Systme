@@ -17,6 +17,37 @@ namespace Editor.DLSystem.Windows
             AddManipulators();
         }
         
+        private void AddManipulators()
+        {
+            this.AddManipulator(new ContentDragger());
+            this.AddManipulator(new ContentZoomer());
+            this.AddManipulator(new SelectionDragger());
+            this.AddManipulator(new RectangleSelector());
+            this.AddManipulator(CreateDLSystemNodeContextualMenu(DLSystemType.SingleChoice,"Node Single"));
+            this.AddManipulator(CreateDLSystemNodeContextualMenu(DLSystemType.MultipleChoice,"Node Multi"));
+            this.AddManipulator(CrateGroupContextualMenu());
+        }
+
+        private IManipulator CrateGroupContextualMenu()
+        {
+            ContextualMenuManipulator menuManipulator = new ContextualMenuManipulator(
+                menuEvent=>menuEvent.menu.AppendAction("Create Group",
+                    actionEvent=>AddElement(CreateGroup("Dialog Group",actionEvent.eventInfo.localMousePosition))
+                )
+            );
+            return menuManipulator;
+        }
+
+        private IManipulator CreateDLSystemNodeContextualMenu(DLSystemType type,string actionTitle)
+        {
+            ContextualMenuManipulator menuManipulator = new ContextualMenuManipulator(
+                menuEvent=>menuEvent.menu.AppendAction(actionTitle,
+                    actionEvent=>AddElement(CreateNode(type,actionEvent.eventInfo.localMousePosition))
+                    )
+                );
+            return menuManipulator;
+        }
+        
         private DLSystemNode CreateNode(DLSystemType dlSystemType,Vector2 position)
         {
             
@@ -26,27 +57,15 @@ namespace Editor.DLSystem.Windows
             AddElement(dlSystemNode);
             return dlSystemNode;
         }
-
-        private void AddManipulators()
-        {
-            this.AddManipulator(new ContentDragger());
-            this.AddManipulator(new ContentZoomer());
-            this.AddManipulator(new SelectionDragger());
-            this.AddManipulator(new RectangleSelector());
-            this.AddManipulator(CreateDLSystemNodeContextualMenu(DLSystemType.SingleChoice,"Node Single"));
-            this.AddManipulator(CreateDLSystemNodeContextualMenu(DLSystemType.MultipleChoice,"Node Multi"));
-
-
-        }
         
-        private IManipulator CreateDLSystemNodeContextualMenu(DLSystemType type,string actionTitle)
+        private GraphElement CreateGroup(string title,Vector2 position)
         {
-            ContextualMenuManipulator menuManipulator = new ContextualMenuManipulator(
-                menuEvent=>menuEvent.menu.AppendAction(actionTitle,
-                    actionEvent=>AddElement(CreateNode(type,actionEvent.eventInfo.localMousePosition))
-                    )
-                );
-            return menuManipulator;
+            Group group = new Group()
+            {
+                title = title
+            };
+            group.SetPosition(new Rect(position,Vector2.zero));
+            return group;
         }
 
 
