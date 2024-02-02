@@ -1,4 +1,5 @@
 using DLSystem.Enums;
+using Editor.Utils;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
@@ -14,17 +15,14 @@ namespace Editor.DLSystem.Elements
             
         }
 
-
+        // Draw Single Choice Node
         protected sealed override void Draw()
         {
             base.Draw();
             foreach (string choice in Choices)
             {
-                Port choicePort = InstantiatePort(Orientation.Horizontal,
-                    Direction.Output, Port.Capacity.Single, typeof(bool)
-                );
-                choicePort.portName = choice;
-                Debug.Log(choice);
+                Port choicePort = this.CreatePort(Orientation.Horizontal, Direction.Output,
+                    Port.Capacity.Single, typeof(bool),choice,new string[]{});
                 outputContainer.Add(choicePort);
             }
             RefreshExpandedState();

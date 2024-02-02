@@ -1,8 +1,7 @@
 using DLSystem.Enums;
-using UnityEditor;
+using Editor.Utils;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.UIElements;
 using Button = UnityEngine.UIElements.Button;
 
@@ -18,37 +17,25 @@ namespace Editor.DLSystem.Elements
             Draw();
         }
 
+        // Draw Multi Choice Node 
         protected sealed override void Draw()
         {
             base.Draw();
-
-            Button addChoiceButton = new Button()
-            {
-                text = "Add Choice",
-            };
-            
-        
+            Button addChoiceButton = DLSystemUtils.CreateButton("Add Choice");
             mainContainer.Insert(1,addChoiceButton);
             int index = 1;
             foreach (string choice in Choices)
             {
-                Port choicePort = InstantiatePort(Orientation.Horizontal,
-                    Direction.Output, Port.Capacity.Single, typeof(bool)
-                );
+                string portName = "Choice "+index.ToString();
+                Port choicePort = this.CreatePort(Orientation.Horizontal, Direction.Output,
+                    Port.Capacity.Single, typeof(bool),portName,new string[]{});
                 
-                choicePort.portName = "Choice "+index.ToString();
                 index++;
-                Button deleteChoiceButton = new Button()
-                {
-                    text = "x"
-                };
-
-                TextField textField = new TextField()
-                {
-                    value = choice
-                };
                 
-                textField.AddToClassList("choice-text-field");
+                Button deleteChoiceButton = DLSystemUtils.CreateButton("x");
+                TextField textField = DLSystemUtils.CreateTextField(choice,
+                    new string [] {"choice-text-field"});
+                
                 choicePort.Add(deleteChoiceButton);
                 VisualElement visualElement = new Box();
                 visualElement.AddToClassList("choice-box");

@@ -4,15 +4,16 @@
 
 #title.node-title-base{
     background-color: rgba(218, 20, 60,1) !important;
+    width: 350px;
 }
 .node-title-base> .node-title-input{
-    width: 300px;
+    width: 200px;
 }
 
 .node-title-input>.unity-base-field__input{
-    background-color: crimson;
     -unity-font-style: bold;
     border-width: 0;
+    background-color: rgb(178, 15, 51) !important;
 }
 
 .node-title-base .unity-text-element--inner-input-field-component {
