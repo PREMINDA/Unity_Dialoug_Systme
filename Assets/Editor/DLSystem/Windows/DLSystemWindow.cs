@@ -23,6 +23,7 @@ namespace Editor.DLSystem.Windows
             graphView.StretchToParentSize();
             rootVisualElement.Add(graphView);
         }
+        
     }
 
 }

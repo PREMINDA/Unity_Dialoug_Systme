@@ -10,13 +10,17 @@ namespace Editor.DLSystem.Windows
 {
     public class DLSystemGraphView : GraphView
     {
+        private DLSystemSearchWindow _searchWindow;
         public DLSystemGraphView()
         {
             AddGridBackground();
             AddStyle();
+            // AddSearchWindow();
             AddManipulators();
         }
+
         
+
         private void AddManipulators()
         {
             this.AddManipulator(new ContentDragger());
@@ -47,7 +51,12 @@ namespace Editor.DLSystem.Windows
                 );
             return menuManipulator;
         }
-        
+
+        public DLSystemNode CreateNode(Vector2 contextPosition,DLSystemType dlSystemType)
+        {
+            return CreateNode(dlSystemType, contextPosition);
+        }
+
         private DLSystemNode CreateNode(DLSystemType dlSystemType,Vector2 position)
         {
             
@@ -57,8 +66,13 @@ namespace Editor.DLSystem.Windows
             AddElement(dlSystemNode);
             return dlSystemNode;
         }
-        
-        private GraphElement CreateGroup(string title,Vector2 position)
+
+        public Group CreateGroup(Vector2 position)
+        {
+            return CreateGroup("Dialog Group", position);
+        }
+
+        private Group CreateGroup(string title,Vector2 position)
         {
             Group group = new Group()
             {
@@ -87,6 +101,18 @@ namespace Editor.DLSystem.Windows
             GridBackground gridBackground = new GridBackground();
             gridBackground.StretchToParentSize();
             Insert(0,gridBackground);
+        }
+        
+        private void AddSearchWindow()
+        {
+            if (_searchWindow == null)
+            {
+                _searchWindow = ScriptableObject.CreateInstance<DLSystemSearchWindow>();
+                _searchWindow.Initialize(this);
+            }
+
+            nodeCreationRequest = context =>
+                SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), _searchWindow);
         }
 
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
