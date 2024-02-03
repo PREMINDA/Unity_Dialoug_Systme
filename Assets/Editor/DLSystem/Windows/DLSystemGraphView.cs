@@ -1,18 +1,23 @@
+using System;
 using System.Collections.Generic;
 using DLSystem.Enums;
+using Editor.DLSystem.Data.Error;
 using Editor.DLSystem.Elements;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 
+
 namespace Editor.DLSystem.Windows
 {
+    using SerializableDictionary;
     public class DLSystemGraphView : GraphView
     {
-        private DLSystemSearchWindow _searchWindow;
+        private SerializableDictionary<String, DLSystemNodeErrorData> _unGroupNode;
         public DLSystemGraphView()
         {
+            _unGroupNode = new SerializableDictionary<string, DLSystemNodeErrorData>();
             AddGridBackground();
             AddStyle();
             // AddSearchWindow();
@@ -64,7 +69,34 @@ namespace Editor.DLSystem.Windows
                 new DLSystemSingleChoiceNode(position):
                 new DLSystemMultiChoiceNode(position);
             AddElement(dlSystemNode);
+
+            AddUnGroupNode(dlSystemNode);
+            
             return dlSystemNode;
+        }
+
+        private void AddUnGroupNode(DLSystemNode dlSystemNode)
+        {
+            string nodeName = dlSystemNode.DialogueNodeName;
+
+            if (!_unGroupNode.ContainsKey(nodeName))
+            {
+                DLSystemNodeErrorData nodeErrorData = new DLSystemNodeErrorData();
+                nodeErrorData.DLSystemNodes.Add(dlSystemNode);
+                _unGroupNode.Add(nodeName,nodeErrorData);
+                return;
+            }
+
+            List<DLSystemNode> listNodes = _unGroupNode[nodeName].DLSystemNodes;
+            
+            listNodes.Add(dlSystemNode);
+            Color32 errorColor = _unGroupNode[nodeName].ErrorData.Color;
+            dlSystemNode.SetErrorStyle(errorColor);
+
+            if (listNodes.Count == 2)
+            {
+                listNodes[0].SetErrorStyle(errorColor);
+            }
         }
 
         public Group CreateGroup(Vector2 position)
@@ -78,8 +110,15 @@ namespace Editor.DLSystem.Windows
             {
                 title = title
             };
+            
             group.SetPosition(new Rect(position,Vector2.zero));
             return group;
+        }
+
+        public override EventPropagation DeleteSelection()
+        {
+            Debug.Log("asd");
+            return base.DeleteSelection();
         }
 
 
@@ -103,18 +142,6 @@ namespace Editor.DLSystem.Windows
             Insert(0,gridBackground);
         }
         
-        private void AddSearchWindow()
-        {
-            if (_searchWindow == null)
-            {
-                _searchWindow = ScriptableObject.CreateInstance<DLSystemSearchWindow>();
-                _searchWindow.Initialize(this);
-            }
-
-            nodeCreationRequest = context =>
-                SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), _searchWindow);
-        }
-
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
         {
             List<Port> compatibalePort = new List<Port>();
@@ -127,5 +154,7 @@ namespace Editor.DLSystem.Windows
             }
             return compatibalePort;
         }
+
+        
     }
 }

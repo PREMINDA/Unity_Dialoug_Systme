@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using DLSystem.Enums;
+using Editor.DLSystem.Data.Constant;
 using Editor.Utils;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -14,10 +15,11 @@ namespace Editor.DLSystem.Elements
         public List<string> Choices { get; set; }
         public string Text { get; set; }
         public DLSystemType DLSystemType { get; set; }
+        
 
         public DLSystemNode()
         { 
-
+            
         }
         public DLSystemNode(Vector2 position)
         { 
@@ -54,6 +56,16 @@ namespace Editor.DLSystem.Elements
             RefreshExpandedState();
 
 
+        }
+        
+        public void SetErrorStyle(Color32 color)
+        {
+            mainContainer.style.backgroundColor = (Color)color;
+        }
+
+        public void ReSetErrorStyle()
+        {
+            mainContainer.style.backgroundColor = Constant.DEFAULT_NODE_COLOR;
         }
     }
 }
