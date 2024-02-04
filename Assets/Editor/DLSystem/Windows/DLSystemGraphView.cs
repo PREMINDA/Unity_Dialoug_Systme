@@ -20,11 +20,14 @@ namespace Editor.DLSystem.Windows
             _unGroupNode = new SerializableDictionary<string, DLSystemNodeErrorData>();
             AddGridBackground();
             AddStyle();
+            OnElementDelete();
             // AddSearchWindow();
             AddManipulators();
         }
 
-        
+
+
+        #region ManipulatorSetup
 
         private void AddManipulators()
         {
@@ -52,10 +55,14 @@ namespace Editor.DLSystem.Windows
             ContextualMenuManipulator menuManipulator = new ContextualMenuManipulator(
                 menuEvent=>menuEvent.menu.AppendAction(actionTitle,
                     actionEvent=>AddElement(CreateNode(type,actionEvent.eventInfo.localMousePosition))
-                    )
-                );
+                )
+            );
             return menuManipulator;
         }
+
+        #endregion
+
+        #region CreateNode
 
         public DLSystemNode CreateNode(Vector2 contextPosition,DLSystemType dlSystemType)
         {
@@ -66,8 +73,8 @@ namespace Editor.DLSystem.Windows
         {
             
             DLSystemNode dlSystemNode = dlSystemType == DLSystemType.SingleChoice?
-                new DLSystemSingleChoiceNode(position):
-                new DLSystemMultiChoiceNode(position);
+                new DLSystemSingleChoiceNode(this,position):
+                new DLSystemMultiChoiceNode(this,position);
             AddElement(dlSystemNode);
 
             AddUnGroupNode(dlSystemNode);
@@ -75,7 +82,11 @@ namespace Editor.DLSystem.Windows
             return dlSystemNode;
         }
 
-        private void AddUnGroupNode(DLSystemNode dlSystemNode)
+        #endregion
+
+        #region AddUnGroupNode
+
+        public void AddUnGroupNode(DLSystemNode dlSystemNode)
         {
             string nodeName = dlSystemNode.DialogueNodeName;
 
@@ -99,6 +110,10 @@ namespace Editor.DLSystem.Windows
             }
         }
 
+        #endregion
+
+        #region CreateGroup
+
         public Group CreateGroup(Vector2 position)
         {
             return CreateGroup("Dialog Group", position);
@@ -115,12 +130,9 @@ namespace Editor.DLSystem.Windows
             return group;
         }
 
-        public override EventPropagation DeleteSelection()
-        {
-            Debug.Log("asd");
-            return base.DeleteSelection();
-        }
-
+        #endregion
+        
+        #region AddStyle
 
         private void AddStyle()
         {
@@ -135,6 +147,10 @@ namespace Editor.DLSystem.Windows
 
         }
 
+        #endregion
+
+        #region AddGrideBG
+
         private void AddGridBackground()
         {
             GridBackground gridBackground = new GridBackground();
@@ -142,19 +158,82 @@ namespace Editor.DLSystem.Windows
             Insert(0,gridBackground);
         }
         
+        #endregion
+
+        #region FindingCompatibalePorts
+
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
         {
-            List<Port> compatibalePort = new List<Port>();
+            List<Port> compatiblePort = new List<Port>();
             foreach (Port port in ports)
             {
                 if (startPort == port) {continue;}
                 if (startPort.node == port.node) continue;
                 if (startPort.direction == port.direction) continue;
-                compatibalePort.Add(port);
+                compatiblePort.Add(port);
             }
-            return compatibalePort;
+            return compatiblePort;
         }
 
+        #endregion
+
+        #region RemoveNode
+        
+        private void OnElementDelete()
+        {
+            deleteSelection = (operationName, askUser) =>
+            {
+                List<DLSystemNode> dlSystemNodesToDelete = new List<DLSystemNode>();
+        
+                foreach (GraphElement element in selection)
+                {
+                    if (element is DLSystemNode node)
+                    {
+                        dlSystemNodesToDelete.Add(node);
+                    }
+                }
+        
+                foreach (DLSystemNode node in dlSystemNodesToDelete)
+                {
+                    if (_unGroupNode.ContainsKey(node.DialogueNodeName) && _unGroupNode[node.DialogueNodeName].DLSystemNodes.Count == 1)
+                    {
+                        _unGroupNode.Remove(node.DialogueNodeName);
+                        RemoveElement(node);
+                        return;
+                    }
+                    RemoveUngroupNode(node);
+                    
+                    RemoveElement(node);
+                }
+            };
+        }
+        
+        public void RemoveUngroupNode(DLSystemNode dlSystemNode)
+        {
+            string nodeName = dlSystemNode.DialogueNodeName;
+        
+            List<DLSystemNode> nodeErrorData = _unGroupNode[nodeName].DLSystemNodes;
+
+            dlSystemNode.ReSetErrorStyle();
+
+            if (nodeErrorData.Count>=2)
+            {
+                nodeErrorData.Remove(dlSystemNode);
+            }
+
+            if (nodeErrorData.Count == 1)
+            {
+                nodeErrorData[0].ReSetErrorStyle();
+                return;
+            }
+        
+            if (nodeErrorData.Count == 0)
+            {
+                _unGroupNode.Remove(nodeName);
+            }
+        }
+        
+        #endregion
         
     }
 }

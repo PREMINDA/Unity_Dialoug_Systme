@@ -1,4 +1,5 @@
 using DLSystem.Enums;
+using Editor.DLSystem.Windows;
 using Editor.Utils;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -9,7 +10,10 @@ namespace Editor.DLSystem.Elements
 {
     public class DLSystemMultiChoiceNode : DLSystemNode
     {
-        public DLSystemMultiChoiceNode(Vector2 position):base(position)
+        public DLSystemMultiChoiceNode(
+            DLSystemGraphView dlSystemGraphView,
+            Vector2 position
+            ) :base(dlSystemGraphView, position)
         {
             DLSystemType = DLSystemType.MultipleChoice;
             Choices.Add("New choice1");

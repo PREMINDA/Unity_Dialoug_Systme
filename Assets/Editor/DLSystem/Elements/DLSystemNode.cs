@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using DLSystem.Enums;
 using Editor.DLSystem.Data.Constant;
+using Editor.DLSystem.Windows;
 using Editor.Utils;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -12,17 +13,22 @@ namespace Editor.DLSystem.Elements
     public class DLSystemNode:Node
     {
         public string DialogueNodeName { get; set; }
-        public List<string> Choices { get; set; }
-        public string Text { get; set; }
+        protected List<string> Choices { get; set; }
+        private string Text { get; set; }
         public DLSystemType DLSystemType { get; set; }
+        private DLSystemGraphView DLSystemGraphView { get; set; }
+        private readonly Color _styleBackgroundColor;
         
-
-        public DLSystemNode()
+        
+        protected DLSystemNode()
         { 
             
         }
-        public DLSystemNode(Vector2 position)
-        { 
+        protected DLSystemNode(DLSystemGraphView dlSystemGraphView,Vector2 position)
+        {
+            DLSystemGraphView = dlSystemGraphView;
+            ColorUtility.TryParseHtmlString( "#1d1d33" , out _styleBackgroundColor );
+            
             Initialize(position);
         }
 
@@ -37,7 +43,11 @@ namespace Editor.DLSystem.Elements
         protected virtual void Draw()
         {
             TextField dialogueNodeName = DLSystemUtils.CreateTextField(DialogueNodeName,
-                new string[] { "node-title-input" });
+                new string[] { "node-title-input" },onChange:callBack=>{
+                    DLSystemGraphView.RemoveUngroupNode(this);
+                    DialogueNodeName = callBack.newValue;
+                    DLSystemGraphView.AddUnGroupNode(this);
+                });
             
             titleContainer.AddToClassList("node-title-base");
             titleContainer.Insert(0,dialogueNodeName);
@@ -65,7 +75,8 @@ namespace Editor.DLSystem.Elements
 
         public void ReSetErrorStyle()
         {
-            mainContainer.style.backgroundColor = Constant.DEFAULT_NODE_COLOR;
+            
+            mainContainer.style.backgroundColor = _styleBackgroundColor;
         }
     }
 }
