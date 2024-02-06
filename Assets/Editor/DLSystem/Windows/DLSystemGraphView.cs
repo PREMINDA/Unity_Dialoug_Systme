@@ -192,22 +192,36 @@ namespace Editor.DLSystem.Windows
             deleteSelection = (operationName, askUser) =>
             {
                 List<DLSystemNode> dlSystemNodesToDelete = new List<DLSystemNode>();
+                List<Group> groupsToDelete = new List<Group>();
         
-                foreach (GraphElement element in selection)
+                foreach (var selectable in selection)
                 {
+                    var element = (GraphElement)selectable;
                     if (element is DLSystemNode node)
                     {
                         dlSystemNodesToDelete.Add(node);
                     }
+                    
+                    if (element is Group group)
+                    {
+                        groupsToDelete.Add(group);
+                    }
+                }
+                
+                foreach (Group group in groupsToDelete) if (groupsToDelete.Count>0)
+                {
+                    
+                    RemoveElement(group);
                 }
         
-                foreach (DLSystemNode node in dlSystemNodesToDelete)
+                foreach (DLSystemNode node in dlSystemNodesToDelete)if (dlSystemNodesToDelete.Count>0)
                 {
                     if (node.IsUnGroup)
                     {
                         RemoveUngroupNode(node);
                     }
-                    
+
+                    node.IsDelete = true;
                     RemoveElement(node);
                 }
             };
@@ -253,10 +267,10 @@ namespace Editor.DLSystem.Windows
                         continue;
                     }
                     DLSystemNode dlSystemNode = (DLSystemNode)element;
-                    Guid GropuId = ((IdGroup)group).GroupId;
-                    dlSystemNode.GroupId = GropuId;
+                    Guid gropuId = ((IdGroup)group).GroupId;
+                    dlSystemNode.GroupId = gropuId;
                     RemoveUngroupNode(dlSystemNode);
-                    AddGroupNode(dlSystemNode,GropuId);
+                    AddGroupNode(dlSystemNode,gropuId);
                 }
             };
         }
@@ -269,7 +283,16 @@ namespace Editor.DLSystem.Windows
         {
             elementsRemovedFromGroup = (group, elements) =>
             {
-                Debug.Log("Remove");
+                foreach (GraphElement element in elements)
+                {
+                    if (!(element is DLSystemNode))
+                    {
+                        continue;
+                    }
+                    DLSystemNode dlSystemNode = (DLSystemNode)element;
+                    dlSystemNode.IsUnGroup = true;
+                    RemoveGroupNode(dlSystemNode);
+                }
             };
         }
 
@@ -318,6 +341,10 @@ namespace Editor.DLSystem.Windows
             if (nodeErrorData.Nodes.Count>=2)
             {
                 nodeErrorData.Nodes.Remove(dlSystemNode);
+                if (dlSystemNode.IsUnGroup)
+                {
+                    RemoveFormGroupDictionary(dlSystemNode);
+                }
                 if (nodeErrorData.Nodes.Count == 1)
                 {
                     nodeErrorData.Nodes[0].ReSetErrorStyle();
@@ -327,11 +354,24 @@ namespace Editor.DLSystem.Windows
 
             if (nodeErrorData.Nodes.Count == 1)
             {
+                if (dlSystemNode.IsUnGroup)
+                {
+                    RemoveFormGroupDictionary(dlSystemNode);
+                }
                 _groupNode[groupId].Remove(nodeName);
             }
         }
 
         #endregion
-        
+
+        private void RemoveFormGroupDictionary(DLSystemNode dlSystemNode)
+        {
+            dlSystemNode.GroupId = Guid.Empty;
+            if (!dlSystemNode.IsDelete)
+            {
+                AddUnGroupNode(dlSystemNode);
+            }
+        }
+
     }
 }
