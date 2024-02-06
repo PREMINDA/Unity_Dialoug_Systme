@@ -6,12 +6,12 @@ namespace Editor.DLSystem.Data.Error
     public class DLSystemNodeErrorData
     {
         public DLSystemErrorData ErrorData { get; set; }
-        public List<DLSystemNode> DLSystemNodes { get; set; }
+        public List<DLSystemNode> Nodes { get; set; }
 
         public DLSystemNodeErrorData()
         {
             ErrorData = new DLSystemErrorData();
-            DLSystemNodes = new List<DLSystemNode>();
+            Nodes = new List<DLSystemNode>();
         }
     }
 }

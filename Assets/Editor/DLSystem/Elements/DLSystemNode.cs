@@ -1,6 +1,6 @@
+using System;
 using System.Collections.Generic;
 using DLSystem.Enums;
-using Editor.DLSystem.Data.Constant;
 using Editor.DLSystem.Windows;
 using Editor.Utils;
 using UnityEditor.Experimental.GraphView;
@@ -9,10 +9,13 @@ using UnityEngine.UIElements;
 
 namespace Editor.DLSystem.Elements
 {
-    using Elements;
     public class DLSystemNode:Node
     {
         public string DialogueNodeName { get; set; }
+
+        public bool IsUnGroup { get; set; }
+
+        public Guid GroupId { get; set;}
         protected List<string> Choices { get; set; }
         private string Text { get; set; }
         public DLSystemType DLSystemType { get; set; }
@@ -28,7 +31,8 @@ namespace Editor.DLSystem.Elements
         {
             DLSystemGraphView = dlSystemGraphView;
             ColorUtility.TryParseHtmlString( "#1d1d33" , out _styleBackgroundColor );
-            
+            GroupId = new Guid();
+            GroupId = Guid.Empty;
             Initialize(position);
         }
 
@@ -44,9 +48,18 @@ namespace Editor.DLSystem.Elements
         {
             TextField dialogueNodeName = DLSystemUtils.CreateTextField(DialogueNodeName,
                 new string[] { "node-title-input" },onChange:callBack=>{
-                    DLSystemGraphView.RemoveUngroupNode(this);
-                    DialogueNodeName = callBack.newValue;
-                    DLSystemGraphView.AddUnGroupNode(this);
+                    if (GroupId == Guid.Empty)
+                    {
+                        DLSystemGraphView.RemoveUngroupNode(this);
+                        DialogueNodeName = callBack.newValue;
+                        DLSystemGraphView.AddUnGroupNode(this);
+                    }
+                    else
+                    {
+                        DLSystemGraphView.RemoveGroupNode(this);
+                        DialogueNodeName = callBack.newValue;
+                        DLSystemGraphView.AddGroupNode(this,GroupId);
+                    }
                 });
             
             titleContainer.AddToClassList("node-title-base");
