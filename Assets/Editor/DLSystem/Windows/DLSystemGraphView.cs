@@ -16,11 +16,11 @@ namespace Editor.DLSystem.Windows
     public class DLSystemGraphView : GraphView
     {
         private SerializableDictionary<String, DLSystemNodeErrorData> _unGroupNode;
-        private SerializableDictionary<Guid,SerializableDictionary<string,DLSystemNodeErrorData>> _groupNode;
+        private SerializableDictionary<Group,SerializableDictionary<string,DLSystemNodeErrorData>> _groupNode;
         public DLSystemGraphView()
         {
             _unGroupNode = new SerializableDictionary<string, DLSystemNodeErrorData>();
-            _groupNode = new SerializableDictionary<Guid, SerializableDictionary<string, DLSystemNodeErrorData>>();
+            _groupNode = new SerializableDictionary<Group, SerializableDictionary<string, DLSystemNodeErrorData>>();
             
             AddGridBackground();
             AddStyle();
@@ -96,7 +96,7 @@ namespace Editor.DLSystem.Windows
         {
             string nodeName = dlSystemNode.DialogueNodeName;
             dlSystemNode.IsUnGroup = true;
-            dlSystemNode.GroupId = Guid.Empty;
+            dlSystemNode.BelongGroup = null;
             if (!_unGroupNode.ContainsKey(nodeName))
             {
                 DLSystemNodeErrorData nodeErrorData = new DLSystemNodeErrorData();
@@ -128,10 +128,9 @@ namespace Editor.DLSystem.Windows
 
         private Group CreateGroup(string title,Vector2 position)
         {
-            IdGroup group = new IdGroup()
+            DLSystemGroup group = new DLSystemGroup()
             {
                 title = title,
-                GroupId = Guid.NewGuid()
             };
             
             group.SetPosition(new Rect(position,Vector2.zero));
@@ -221,7 +220,7 @@ namespace Editor.DLSystem.Windows
                         RemoveUngroupNode(node);
                     }
 
-                    node.IsDelete = true;
+                    node.IsGoingToDelete = true;
                     RemoveElement(node);
                 }
             };
@@ -267,10 +266,9 @@ namespace Editor.DLSystem.Windows
                         continue;
                     }
                     DLSystemNode dlSystemNode = (DLSystemNode)element;
-                    Guid gropuId = ((IdGroup)group).GroupId;
-                    dlSystemNode.GroupId = gropuId;
+                    dlSystemNode.BelongGroup = group;
                     RemoveUngroupNode(dlSystemNode);
-                    AddGroupNode(dlSystemNode,gropuId);
+                    AddGroupNode(dlSystemNode,group);
                 }
             };
         }
@@ -299,7 +297,7 @@ namespace Editor.DLSystem.Windows
         #endregion
 
         #region AddGroupNode
-        public void AddGroupNode(DLSystemNode dlSystemNode, Guid groupId)
+        public void AddGroupNode(DLSystemNode dlSystemNode, Group groupId)
         {
             string nodeName = dlSystemNode.DialogueNodeName;
             dlSystemNode.IsUnGroup = false;
@@ -333,7 +331,7 @@ namespace Editor.DLSystem.Windows
         public void RemoveGroupNode(DLSystemNode dlSystemNode)
         {
             string nodeName = dlSystemNode.DialogueNodeName;
-            Guid groupId = dlSystemNode.GroupId;
+            Group groupId = dlSystemNode.BelongGroup;
             DLSystemNodeErrorData nodeErrorData = _groupNode[groupId][nodeName];
 
             dlSystemNode.ReSetErrorStyle();
@@ -361,13 +359,13 @@ namespace Editor.DLSystem.Windows
                 _groupNode[groupId].Remove(nodeName);
             }
         }
-
+        
         #endregion
 
         private void RemoveFormGroupDictionary(DLSystemNode dlSystemNode)
         {
-            dlSystemNode.GroupId = Guid.Empty;
-            if (!dlSystemNode.IsDelete)
+            dlSystemNode.BelongGroup = null;
+            if (!dlSystemNode.IsGoingToDelete)
             {
                 AddUnGroupNode(dlSystemNode);
             }

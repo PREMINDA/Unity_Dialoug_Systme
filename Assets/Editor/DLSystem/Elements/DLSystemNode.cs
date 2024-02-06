@@ -14,8 +14,8 @@ namespace Editor.DLSystem.Elements
         public string DialogueNodeName { get; set; }
 
         public bool IsUnGroup { get; set; }
-        public bool IsDelete { get; set; }
-        public Guid GroupId { get; set;}
+        public bool IsGoingToDelete { get; set; }
+        public Group BelongGroup { get; set;}
         protected List<string> Choices { get; set; }
         private string Text { get; set; }
         public DLSystemType DLSystemType { get; set; }
@@ -31,9 +31,7 @@ namespace Editor.DLSystem.Elements
         {
             DLSystemGraphView = dlSystemGraphView;
             ColorUtility.TryParseHtmlString( "#1d1d33" , out _styleBackgroundColor );
-            IsDelete = false;
-            GroupId = new Guid();
-            GroupId = Guid.Empty;
+            IsGoingToDelete = false;
             Initialize(position);
         }
 
@@ -59,7 +57,7 @@ namespace Editor.DLSystem.Elements
                     {
                         DLSystemGraphView.RemoveGroupNode(this);
                         DialogueNodeName = callBack.newValue;
-                        DLSystemGraphView.AddGroupNode(this,GroupId);
+                        DLSystemGraphView.AddGroupNode(this,BelongGroup);
                     }
                 });
             
