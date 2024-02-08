@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using DLSystem.Enums;
 using Editor.DLSystem.Data.Error;
 using Editor.DLSystem.Elements;
@@ -15,18 +15,21 @@ namespace Editor.DLSystem.Windows
     using SerializableDictionary;
     public class DLSystemGraphView : GraphView
     {
-        private SerializableDictionary<String, DLSystemNodeErrorData> _unGroupNode;
-        private SerializableDictionary<Group,SerializableDictionary<string,DLSystemNodeErrorData>> _groupNode;
+        private readonly SerializableDictionary<string, DLSystemNodeErrorData> _unGroupNode;
+        private readonly SerializableDictionary<string, DLSystemGroupErrorData> _groups;
+        private readonly SerializableDictionary<Group,SerializableDictionary<string,DLSystemNodeErrorData>> _groupNode;
         public DLSystemGraphView()
         {
             _unGroupNode = new SerializableDictionary<string, DLSystemNodeErrorData>();
             _groupNode = new SerializableDictionary<Group, SerializableDictionary<string, DLSystemNodeErrorData>>();
+            _groups = new SerializableDictionary<string, DLSystemGroupErrorData>();
             
             AddGridBackground();
             AddStyle();
             OnElementDelete();
             OnGroupElementsAdd();
             OnGroupElementRemove();
+            OnGroupTitleChange();
             // AddSearchWindow();
             AddManipulators();
         }
@@ -118,22 +121,41 @@ namespace Editor.DLSystem.Windows
         }
 
         #endregion
+        
+        #region AddGroup
 
-        #region CreateGroup
-
-        public Group CreateGroup(Vector2 position)
+        private void AddGroup(DLSystemGroup dlSystemGroup)
         {
-            return CreateGroup("Dialog Group", position);
+            string groupTitle = dlSystemGroup.title;
+            
+            if (!_groups.ContainsKey(groupTitle))
+            {
+                DLSystemGroupErrorData groupErrorData = new DLSystemGroupErrorData();
+                groupErrorData.Groups.Add(dlSystemGroup);
+                _groups.Add(groupTitle,groupErrorData);
+                return;
+            }
+
+            List<DLSystemGroup> dlSystemGroups = _groups[groupTitle].Groups;
+            
+            dlSystemGroups.Add(dlSystemGroup);
+            Color32 errorColor = _groups[groupTitle].ErrorData.Color;
+            dlSystemGroup.SetErrorStyle(errorColor);
+
+            if (dlSystemGroups.Count == 2)
+            {
+                dlSystemGroups[0].SetErrorStyle(errorColor);
+            }
         }
 
+        #endregion
+
+        #region CreateGroup
+        
         private Group CreateGroup(string title,Vector2 position)
         {
-            DLSystemGroup group = new DLSystemGroup()
-            {
-                title = title,
-            };
-            
-            group.SetPosition(new Rect(position,Vector2.zero));
+            DLSystemGroup group = new DLSystemGroup(title, position);
+            AddGroup(group);
             return group;
         }
 
@@ -184,7 +206,7 @@ namespace Editor.DLSystem.Windows
 
         #endregion
 
-        #region RemoveElement
+        #region OnElementDelete
         
         private void OnElementDelete()
         {
@@ -199,6 +221,7 @@ namespace Editor.DLSystem.Windows
                     if (element is DLSystemNode node)
                     {
                         dlSystemNodesToDelete.Add(node);
+                        continue;
                     }
                     
                     if (element is Group group)
@@ -209,7 +232,23 @@ namespace Editor.DLSystem.Windows
                 
                 foreach (Group group in groupsToDelete) if (groupsToDelete.Count>0)
                 {
-                    
+                    ((DLSystemGroup)group).isGroupGoingToDelete = true;
+                    var dlSystemNodeErrorDatas = _groupNode[group].Values;
+                    int count = dlSystemNodeErrorDatas.Count;
+                    for (int k = 0; k < count ; k++)
+                    {
+                        var dlSystemNodeErrorData = dlSystemNodeErrorDatas.ToList()[0];
+                        int nodeCount = dlSystemNodeErrorData.Nodes.Count;
+                        for (int i = 0; i<nodeCount ; i++ )
+                        {
+                            var node = dlSystemNodeErrorData.Nodes[0];
+                            node.IsGoingToDelete = true;
+                            RemoveGroupNode(node);
+                            RemoveElement(node);
+                        }
+                    }
+
+                    RemoveGroup((DLSystemGroup)group);
                     RemoveElement(group);
                 }
         
@@ -226,6 +265,26 @@ namespace Editor.DLSystem.Windows
             };
             
         }
+        
+        #endregion
+
+        #region OnGroupTitleChange
+
+        private void OnGroupTitleChange()
+        {
+            groupTitleChanged = (group, newTitle) =>
+            {
+                DLSystemGroup dlSystemGroup = (DLSystemGroup)group;
+
+                RemoveGroup(dlSystemGroup);
+                dlSystemGroup.oldTitle = newTitle;
+                AddGroup(dlSystemGroup);
+            };
+        }
+
+        #endregion
+
+        #region RemoveUngroupNode
         
         public void RemoveUngroupNode(DLSystemNode dlSystemNode)
         {
@@ -281,6 +340,7 @@ namespace Editor.DLSystem.Windows
         {
             elementsRemovedFromGroup = (group, elements) =>
             {
+                if(((DLSystemGroup)group).isGroupGoingToDelete)return;
                 foreach (GraphElement element in elements)
                 {
                     if (!(element is DLSystemNode))
@@ -341,7 +401,7 @@ namespace Editor.DLSystem.Windows
                 nodeErrorData.Nodes.Remove(dlSystemNode);
                 if (dlSystemNode.IsUnGroup)
                 {
-                    RemoveFormGroupDictionary(dlSystemNode);
+                    MoveFromGroupToUnGroup(dlSystemNode);
                 }
                 if (nodeErrorData.Nodes.Count == 1)
                 {
@@ -354,7 +414,7 @@ namespace Editor.DLSystem.Windows
             {
                 if (dlSystemNode.IsUnGroup)
                 {
-                    RemoveFormGroupDictionary(dlSystemNode);
+                    MoveFromGroupToUnGroup(dlSystemNode);
                 }
                 _groupNode[groupId].Remove(nodeName);
             }
@@ -362,7 +422,31 @@ namespace Editor.DLSystem.Windows
         
         #endregion
 
-        private void RemoveFormGroupDictionary(DLSystemNode dlSystemNode)
+        private void RemoveGroup(DLSystemGroup dlSystemGroup)
+        {
+            string nodeName = dlSystemGroup.oldTitle;
+        
+            List<DLSystemGroup> groupErrorData = _groups[nodeName].Groups;
+
+            dlSystemGroup.ReSetErrorStyle();
+
+            if (groupErrorData.Count>=2)
+            {
+                groupErrorData.Remove(dlSystemGroup);
+                if (groupErrorData.Count == 1)
+                {
+                    groupErrorData[0].ReSetErrorStyle();
+                }
+                return;
+            }
+
+            if (groupErrorData.Count == 1)
+            {
+                _groups.Remove(nodeName);
+            }
+        }
+
+        private void MoveFromGroupToUnGroup(DLSystemNode dlSystemNode)
         {
             dlSystemNode.BelongGroup = null;
             if (!dlSystemNode.IsGoingToDelete)
