@@ -233,18 +233,21 @@ namespace Editor.DLSystem.Windows
                 foreach (Group group in groupsToDelete) if (groupsToDelete.Count>0)
                 {
                     ((DLSystemGroup)group).isGroupGoingToDelete = true;
-                    var dlSystemNodeErrorDatas = _groupNode[group].Values;
-                    int count = dlSystemNodeErrorDatas.Count;
-                    for (int k = 0; k < count ; k++)
+                    if (_groupNode.Contains(group))
                     {
-                        var dlSystemNodeErrorData = dlSystemNodeErrorDatas.ToList()[0];
-                        int nodeCount = dlSystemNodeErrorData.Nodes.Count;
-                        for (int i = 0; i<nodeCount ; i++ )
+                        var dlSystemNodeErrorDatas = _groupNode[group].Values;
+                        int count = dlSystemNodeErrorDatas.Count;
+                        for (int k = 0; k < count ; k++) if (count>0)
                         {
-                            var node = dlSystemNodeErrorData.Nodes[0];
-                            node.IsGoingToDelete = true;
-                            RemoveGroupNode(node);
-                            RemoveElement(node);
+                            var dlSystemNodeErrorData = dlSystemNodeErrorDatas.ToList()[0];
+                            int nodeCount = dlSystemNodeErrorData.Nodes.Count;
+                            for (int i = 0; i<nodeCount ; i++ )
+                            {
+                                var node = dlSystemNodeErrorData.Nodes[0];
+                                node.IsGoingToDelete = true;
+                                RemoveGroupNode(node);
+                                RemoveElement(node);
+                            }
                         }
                     }
 
