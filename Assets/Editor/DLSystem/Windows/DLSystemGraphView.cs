@@ -214,6 +214,7 @@ namespace Editor.DLSystem.Windows
             {
                 List<DLSystemNode> dlSystemNodesToDelete = new List<DLSystemNode>();
                 List<Group> groupsToDelete = new List<Group>();
+                List<Edge> edgesToDelete = new List<Edge>();
         
                 foreach (var selectable in selection)
                 {
@@ -223,7 +224,13 @@ namespace Editor.DLSystem.Windows
                         dlSystemNodesToDelete.Add(node);
                         continue;
                     }
-                    
+
+                    if (element is Edge edge)
+                    {
+                        edgesToDelete.Add(edge);
+                        continue;
+                    }
+
                     if (element is Group group)
                     {
                         groupsToDelete.Add(group);
@@ -264,6 +271,11 @@ namespace Editor.DLSystem.Windows
 
                     node.IsGoingToDelete = true;
                     RemoveElement(node);
+                }
+
+                if (edgesToDelete.Count > 0)
+                {
+                    DeleteElements(edgesToDelete);
                 }
             };
             

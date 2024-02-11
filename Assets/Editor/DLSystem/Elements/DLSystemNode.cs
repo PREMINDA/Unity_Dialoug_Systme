@@ -15,7 +15,7 @@ namespace Editor.DLSystem.Elements
 
         public bool IsUnGroup { get; set; }
         public bool IsGoingToDelete { get; set; }
-        public Group BelongGroup { get; set;}
+
         protected List<string> Choices { get; set; }
         private string Text { get; set; }
         public DLSystemType DLSystemType { get; set; }
