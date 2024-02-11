@@ -266,10 +266,9 @@ namespace Editor.DLSystem.Windows
                 {
                     if (node.IsUnGroup)
                     {
+                        node.IsGoingToDelete = true;
                         RemoveUngroupNode(node);
                     }
-
-                    node.IsGoingToDelete = true;
                     RemoveElement(node);
                 }
 
@@ -309,6 +308,10 @@ namespace Editor.DLSystem.Windows
 
             dlSystemNode.ReSetErrorStyle();
 
+            if (dlSystemNode.IsGoingToDelete)
+            {
+                dlSystemNode.DisconnectAllPorts();
+            }
             if (nodeErrorData.Count>=2)
             {
                 nodeErrorData.Remove(dlSystemNode);
@@ -411,6 +414,11 @@ namespace Editor.DLSystem.Windows
 
             dlSystemNode.ReSetErrorStyle();
 
+            if (dlSystemNode.IsGoingToDelete)
+            {
+                dlSystemNode.DisconnectAllPorts();
+            }
+            
             if (nodeErrorData.Nodes.Count>=2)
             {
                 nodeErrorData.Nodes.Remove(dlSystemNode);

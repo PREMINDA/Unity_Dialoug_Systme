@@ -1,4 +1,5 @@
 using DLSystem.Enums;
+using Editor.DLSystem.Entity;
 using Editor.DLSystem.Windows;
 using Editor.Utils;
 using UnityEditor.Experimental.GraphView;
@@ -39,9 +40,9 @@ namespace Editor.DLSystem.Elements
                 Button deleteChoiceButton = DLSystemUtils.CreateButton("x");
                 TextField textField = DLSystemUtils.CreateTextField(choice,
                     new string [] {"choice-text-field"});
-                
+                 
                 choicePort.Add(deleteChoiceButton);
-                VisualElement visualElement = new Box();
+                VisualElement visualElement = new DLSystemMultiPortContainerBox(choicePort);
                 visualElement.AddToClassList("choice-box");
                 visualElement.Add(choicePort);
                 visualElement.Add(textField);

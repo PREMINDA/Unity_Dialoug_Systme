@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using DLSystem.Enums;
+using Editor.DLSystem.Entity;
 using Editor.DLSystem.Windows;
 using Editor.Utils;
 using UnityEditor.Experimental.GraphView;
@@ -15,7 +16,7 @@ namespace Editor.DLSystem.Elements
 
         public bool IsUnGroup { get; set; }
         public bool IsGoingToDelete { get; set; }
-
+        public Group BelongGroup { get; set;}
         protected List<string> Choices { get; set; }
         private string Text { get; set; }
         public DLSystemType DLSystemType { get; set; }
@@ -79,7 +80,30 @@ namespace Editor.DLSystem.Elements
 
 
         }
-        
+
+        public void DisconnectAllPorts()
+        {
+            DisconnectPorts(inputContainer);
+            DisconnectPorts(outputContainer);
+
+        }
+
+        private void DisconnectPorts(VisualElement element)
+        {
+            foreach (var visualElement in element.Children()) if( visualElement != null)
+            {
+                Port port = (visualElement is Port)?(Port)visualElement :
+                    ((DLSystemMultiPortContainerBox)visualElement).configPort;
+                
+                if (!port.connected)
+                {
+                    continue;
+                }
+
+                DLSystemGraphView.DeleteElements(port.connections);
+            }
+        }
+
         public void SetErrorStyle(Color32 color)
         {
             mainContainer.style.backgroundColor = (Color)color;
