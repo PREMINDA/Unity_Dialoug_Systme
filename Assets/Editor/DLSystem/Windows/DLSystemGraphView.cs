@@ -167,10 +167,10 @@ namespace Editor.DLSystem.Windows
         {
             StyleSheet styleSheet1 =
                 (StyleSheet)EditorGUIUtility.Load(
-                    "Assets/Editor Default Resources/DLSystem/DLSystemGraphViewStyle.uss");
+                    "DLSystem/DLSystemGraphViewStyle.uss");
             StyleSheet styleSheet2 =
                 (StyleSheet)EditorGUIUtility.Load(
-                    "Assets/Editor Default Resources/DLSystem/DLSystemNode.uss");
+                    "DLSystem/DLSystemNode.uss");
             styleSheets.Add(styleSheet1);
             styleSheets.Add(styleSheet2);
 

@@ -93,7 +93,7 @@ namespace Editor.DLSystem.Elements
             foreach (var visualElement in element.Children()) if( visualElement != null)
             {
                 Port port = (visualElement is Port)?(Port)visualElement :
-                    ((DLSystemMultiPortContainerBox)visualElement).configPort;
+                    ((DLSystemMultiPortContainerBox)visualElement).ConfigPort;
                 
                 if (!port.connected)
                 {

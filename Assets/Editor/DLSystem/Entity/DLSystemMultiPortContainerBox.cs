@@ -6,11 +6,11 @@ namespace Editor.DLSystem.Entity
 {
     public class DLSystemMultiPortContainerBox : Box
     {
-        public Port configPort { get; set; }
+        public Port ConfigPort { get; set; }
 
         public DLSystemMultiPortContainerBox(Port port):base()
         {
-            configPort = port;
+            ConfigPort = port;
             Add(port);
         }
         

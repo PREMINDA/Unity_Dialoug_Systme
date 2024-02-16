@@ -12,11 +12,12 @@ namespace Editor.Utils
     public static class DLSystemUtils
     {
         
-        public static TextField CreateTextField(string title,string[] styleClass,bool multiLine = false, EventCallback<ChangeEvent<string>> onChange = null)
+        public static TextField CreateTextField(string title,string[] styleClass,string lable = null,bool multiLine = false, EventCallback<ChangeEvent<string>> onChange = null)
         {
             TextField textField = new TextField()
             {
-                value = title
+                value = title,
+                label = lable
             };
             
             textField.multiline = multiLine;
