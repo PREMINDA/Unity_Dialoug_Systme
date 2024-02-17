@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using DLSystem.Enums;
+using Editor.DLSystem.Data.Save;
 using Editor.DLSystem.Entity;
 using Editor.DLSystem.Windows;
 using Editor.Utils;
@@ -14,13 +15,14 @@ namespace Editor.DLSystem.Elements
     {
         public string DialogueNodeName { get; set; }
 
+        public string ID { get; set; }
         public bool IsUnGroup { get; set; }
         public bool IsGoingToDelete { get; set; }
         public Group BelongGroup { get; set;}
-        protected List<string> Choices { get; set; }
+        protected List<DLSystemChoiceSaveData> Choices { get; set; }
         private string Text { get; set; }
         public DLSystemType DLSystemType { get; set; }
-        private DLSystemGraphView DLSystemGraphView { get; set; }
+        protected DLSystemGraphView DLSystemGraphView { get; set; }
         private readonly Color _styleBackgroundColor;
         
         
@@ -30,6 +32,7 @@ namespace Editor.DLSystem.Elements
         }
         protected DLSystemNode(DLSystemGraphView dlSystemGraphView,Vector2 position)
         {
+            ID = Guid.NewGuid().ToString();
             DLSystemGraphView = dlSystemGraphView;
             ColorUtility.TryParseHtmlString( "#1d1d33" , out _styleBackgroundColor );
             IsGoingToDelete = false;
@@ -39,7 +42,7 @@ namespace Editor.DLSystem.Elements
         private void Initialize(Vector2 position)
         {
             DialogueNodeName = "DialogueName";
-            Choices = new List<string>();
+            Choices = new List<DLSystemChoiceSaveData>();
             Text = "Init Text.";
             SetPosition(new Rect(position,Vector2.zero));
         }

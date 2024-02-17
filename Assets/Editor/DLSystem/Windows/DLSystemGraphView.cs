@@ -239,7 +239,7 @@ namespace Editor.DLSystem.Windows
                 
                 foreach (Group group in groupsToDelete) if (groupsToDelete.Count>0)
                 {
-                    ((DLSystemGroup)group).isGroupGoingToDelete = true;
+                    ((DLSystemGroup)group).IsGroupGoingToDelete = true;
                     if (_groupNode.Contains(group))
                     {
                         var dlSystemNodeErrorDatas = _groupNode[group].Values;
@@ -291,7 +291,7 @@ namespace Editor.DLSystem.Windows
                 DLSystemGroup dlSystemGroup = (DLSystemGroup)group;
 
                 RemoveGroup(dlSystemGroup);
-                dlSystemGroup.oldTitle = newTitle;
+                dlSystemGroup.OldTitle = newTitle;
                 AddGroup(dlSystemGroup);
             };
         }
@@ -358,7 +358,7 @@ namespace Editor.DLSystem.Windows
         {
             elementsRemovedFromGroup = (group, elements) =>
             {
-                if(((DLSystemGroup)group).isGroupGoingToDelete)return;
+                if(((DLSystemGroup)group).IsGroupGoingToDelete)return;
                 foreach (GraphElement element in elements)
                 {
                     if (!(element is DLSystemNode))
@@ -447,7 +447,7 @@ namespace Editor.DLSystem.Windows
 
         private void RemoveGroup(DLSystemGroup dlSystemGroup)
         {
-            string nodeName = dlSystemGroup.oldTitle;
+            string nodeName = dlSystemGroup.OldTitle;
         
             List<DLSystemGroup> groupErrorData = _groups[nodeName].Groups;
 

@@ -1,4 +1,5 @@
 using DLSystem.Enums;
+using Editor.DLSystem.Data.Save;
 using Editor.DLSystem.Windows;
 using Editor.Utils;
 using UnityEditor.Experimental.GraphView;
@@ -14,7 +15,7 @@ namespace Editor.DLSystem.Elements
             ):base(dlSystemGraphView,position)
         {
             DLSystemType = DLSystemType.SingleChoice;
-            Choices.Add("New choice1");
+            Choices.Add(new DLSystemChoiceSaveData(){Text = "New choice1"});
             Draw();
             
         }
@@ -23,10 +24,10 @@ namespace Editor.DLSystem.Elements
         protected sealed override void Draw()
         {
             base.Draw();
-            foreach (string choice in Choices)
+            foreach (DLSystemChoiceSaveData choice in Choices)
             {
                 Port choicePort = this.CreatePort(Orientation.Horizontal, Direction.Output,
-                    Port.Capacity.Single, typeof(bool),choice,new string[]{});
+                    Port.Capacity.Single, typeof(bool),choice.Text,new string[]{});
                 outputContainer.Add(choicePort);
             }
             RefreshExpandedState();
