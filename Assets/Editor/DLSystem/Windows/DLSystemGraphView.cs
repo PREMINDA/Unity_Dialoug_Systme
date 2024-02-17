@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
+using System;
 using DLSystem.Enums;
 using Editor.DLSystem.Data.Error;
+using Editor.DLSystem.Data.Save;
 using Editor.DLSystem.Elements;
 using Editor.DLSystem.Entity;
 using UnityEditor;
@@ -30,6 +32,7 @@ namespace Editor.DLSystem.Windows
             OnGroupElementsAdd();
             OnGroupElementRemove();
             OnGroupTitleChange();
+            OnGraphViewChanged();
             // AddSearchWindow();
             AddManipulators();
         }
@@ -402,6 +405,47 @@ namespace Editor.DLSystem.Windows
 
             }
         }
+        #endregion
+
+        #region OnGraphViewChanged
+
+        private void OnGraphViewChanged()
+        {
+            graphViewChanged = (changes) =>
+            {
+                if (changes.edgesToCreate != null)
+                {
+                    foreach (Edge edge in changes.edgesToCreate)
+                    {
+                        DLSystemNode nextNode = (DLSystemNode) edge.input.node;
+
+                        DLSystemChoiceSaveData choiceData = (DLSystemChoiceSaveData) edge.output.userData;
+                        choiceData.NodeID = nextNode.ID;
+                    }
+                }
+
+                if (changes.elementsToRemove != null)
+                {
+                    Type edgeType = typeof(Edge);
+
+                    foreach (GraphElement element in changes.elementsToRemove)
+                    {
+                        if (element.GetType() != edgeType)
+                        {
+                            continue;
+                        }
+
+                        Edge edge = (Edge) element;
+
+                        DLSystemChoiceSaveData choiceData = (DLSystemChoiceSaveData) edge.output.userData;
+                        choiceData.NodeID = "";
+                    }
+                }
+
+                return changes;
+            };
+        }
+
         #endregion
 
         #region RemoveGroupNode
