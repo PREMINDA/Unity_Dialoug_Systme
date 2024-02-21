@@ -83,8 +83,8 @@ namespace Editor.DLSystem.Elements
         {
             VisualElement visualElement = new DLSystemMultiPortContainerBox(choicePort);
             DLSystemChoiceSaveData choiceData = (DLSystemChoiceSaveData)choicePort.userData;
-            TextField textField = DLSystemUtils.CreateTextField(choiceData.Text,
-                new string [] {"choice-text-field"});
+            TextField textField = DLSystemUtils.CreateTextField(choiceData.Text, new string [] {"choice-text-field"},
+                onChange:callback=>choiceData.Text = callback.newValue);
             visualElement.AddToClassList("choice-box");
             visualElement.Add(choicePort);
             visualElement.Add(textField);
