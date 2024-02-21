@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using DLSystem.Enums;
 using Editor.DLSystem.Data.Save;
 using Editor.DLSystem.Entity;
@@ -19,8 +20,8 @@ namespace Editor.DLSystem.Elements
         public bool IsUnGroup { get; set; }
         public bool IsGoingToDelete { get; set; }
         public Group BelongGroup { get; set;}
-        protected List<DLSystemChoiceSaveData> Choices { get; set; }
-        private string Text { get; set; }
+        public List<DLSystemChoiceSaveData> Choices { get; set; }
+        public string Text { get; set; }
         public DLSystemType DLSystemType { get; set; }
         protected DLSystemGraphView DLSystemGraphView { get; set; }
         private readonly Color _styleBackgroundColor;
@@ -75,7 +76,8 @@ namespace Editor.DLSystem.Elements
             customDataContainer.AddToClassList("Ti");
             
             Foldout textFoldout = DLSystemUtils.CreateTextFold("Dialogue Text");
-            TextField textField = DLSystemUtils.CreateTextField(Text, new string[] { "dialog-input-field" });
+            TextField textField = DLSystemUtils.CreateTextField(Text, new string[] { "dialog-input-field" },onChange:
+                callback => Text = callback.newValue);
             textFoldout.Add(textField);
             customDataContainer.Add(textFoldout);
             extensionContainer.Add(customDataContainer);
@@ -89,6 +91,13 @@ namespace Editor.DLSystem.Elements
             DisconnectPorts(inputContainer);
             DisconnectPorts(outputContainer);
 
+        }
+        
+        public bool IsStartingNode()
+        {
+            Port inputPort = (Port) inputContainer.Children().First();
+
+            return !inputPort.connected;
         }
 
         private void DisconnectPorts(VisualElement element)
