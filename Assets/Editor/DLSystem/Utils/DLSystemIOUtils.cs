@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using DLSystem.Scripts.Data;
 using Editor.DLSystem.Elements;
 using Editor.DLSystem.Entity;
@@ -28,6 +29,7 @@ namespace Editor.DLSystem.Utils
         public static void Initialize(string fileName,DLSystemGraphView dlSystemGraphView)
         {
             _graphFileName = fileName;
+            _createdDialogues = new Dictionary<string, DLSystemDialogueSO>();
             _createdDialogueGroups = new Dictionary<string, DLSystemDialogueGroupSO>();
             _containerFolderPath =  $"Assets/DLSystem/Dialogues/{fileName}";
             _dlSystemGraphView = dlSystemGraphView;
@@ -56,11 +58,31 @@ namespace Editor.DLSystem.Utils
         #region GroupsUtils
         private static void SaveGroups(DLSystemGraphSaveDataSO graphData, DLSystemContainerSO dialogueContainer)
         {
+            List<string> groupNames = new List<string>();
             foreach (DLSystemGroup group in _groups)
             {
                 SaveGroupsInGraph(group,graphData);
                 SaveGroupInContainer(group, dialogueContainer);
+                
+                groupNames.Add(group.title);
             }
+            UpdateOldGroups(groupNames, graphData);
+            
+        }
+        
+        private static void UpdateOldGroups(List<string> currentGroupNames, DLSystemGraphSaveDataSO graphData)
+        {
+            if (graphData.OldGroupNames != null && graphData.OldGroupNames.Count != 0)
+            {
+                List<string> groupsToRemove = graphData.OldGroupNames.Except(currentGroupNames).ToList();
+
+                foreach (string groupToRemove in groupsToRemove)
+                {
+                    RemoveFolder($"{_containerFolderPath}/Groups/{groupToRemove}");
+                }
+            }
+
+            graphData.OldGroupNames = new List<string>(currentGroupNames);
         }
 
         private static void SaveGroupInContainer(DLSystemGroup group, DLSystemContainerSO dialogueContainer)
@@ -97,10 +119,11 @@ namespace Editor.DLSystem.Utils
 
         #region NodeUtils
 
-        private static void SaveNode(DLSystemGraphSaveDataSO graphData, DLSystemContainerSO dialogueContainer)
+        private static void SaveNodes(DLSystemGraphSaveDataSO graphData, DLSystemContainerSO dialogueContainer)
         {
             SerializableDictionary<string, List<string>> groupedNodeNames = new SerializableDictionary<string, List<string>>();
             List<string> ungroupedNodeNames = new List<string>();
+            
             
             foreach (DLSystemNode node in _nodes)
             {
@@ -121,8 +144,51 @@ namespace Editor.DLSystem.Utils
 
                 ungroupedNodeNames.Add(node.DialogueNodeName);
             }
+            UpdateDialoguesChoicesConnections();
+            
+            UpdateOldGroupedNodes(groupedNodeNames, graphData);
+            UpdateOldUngroupedNodes(ungroupedNodeNames, graphData);
+
         }
         
+        private static void UpdateOldGroupedNodes(SerializableDictionary<string, List<string>> currentGroupedNodeNames, DLSystemGraphSaveDataSO graphData)
+        {
+            if (graphData.OldGroupedNodeNames != null && graphData.OldGroupedNodeNames.Count != 0)
+            {
+                foreach (KeyValuePair<string, List<string>> oldGroupedNode in graphData.OldGroupedNodeNames)
+                {
+                    List<string> nodesToRemove = new List<string>();
+
+                    if (currentGroupedNodeNames.ContainsKey(oldGroupedNode.Key))
+                    {
+                        nodesToRemove = oldGroupedNode.Value.Except(currentGroupedNodeNames[oldGroupedNode.Key]).ToList();
+                    }
+
+                    foreach (string nodeToRemove in nodesToRemove)
+                    {
+                        RemoveAsset($"{_containerFolderPath}/Groups/{oldGroupedNode.Key}/Dialogues", nodeToRemove);
+                    }
+                }
+            }
+
+            graphData.OldGroupedNodeNames = new SerializableDictionary<string, List<string>>(currentGroupedNodeNames);
+        }
+        
+        private static void UpdateOldUngroupedNodes(List<string> currentUngroupedNodeNames, DLSystemGraphSaveDataSO graphData)
+        {
+            if (graphData.OldUngroupedNodeNames != null && graphData.OldUngroupedNodeNames.Count != 0)
+            {
+                List<string> nodesToRemove = graphData.OldUngroupedNodeNames.Except(currentUngroupedNodeNames).ToList();
+
+                foreach (string nodeToRemove in nodesToRemove)
+                {
+                    RemoveAsset($"{_containerFolderPath}/Global/Dialogues", nodeToRemove);
+                }
+            }
+
+            graphData.OldUngroupedNodeNames = new List<string>(currentUngroupedNodeNames);
+        }
+
         private static void SaveNodeInGraph(DLSystemNode node, DLSystemGraphSaveDataSO graphData)
         {
             List<DLSystemChoiceSaveData> choices = CloneNodeChoices(node.Choices);
@@ -255,6 +321,35 @@ namespace Editor.DLSystem.Utils
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
         }
+        
+        public static void RemoveFolder(string path)
+        {
+            FileUtil.DeleteFileOrDirectory($"{path}.meta");
+            FileUtil.DeleteFileOrDirectory($"{path}/");
+        }
+        
+        private static void UpdateDialoguesChoicesConnections()
+        {
+            foreach (var node in _nodes)
+            {
+                DLSystemDialogueSO dialogue = _createdDialogues[node.ID];
+
+                for (int choiceIndex = 0; choiceIndex < node.Choices.Count; ++choiceIndex)
+                {
+                    DLSystemChoiceSaveData nodeChoice = node.Choices[choiceIndex];
+
+                    if (string.IsNullOrEmpty(nodeChoice.NodeID))
+                    {
+                        continue;
+                    }
+
+                    dialogue.Choices[choiceIndex].NextDialogue = _createdDialogues[nodeChoice.NodeID];
+
+                    SaveAsset(dialogue);
+                }
+            }
+        }
+
 
         public static T CreateAsset<T>(string path, string assetName) where T : ScriptableObject
         {
@@ -277,6 +372,11 @@ namespace Editor.DLSystem.Utils
             string fullPath = $"{path}/{assetName}.asset";
 
             return AssetDatabase.LoadAssetAtPath<T>(fullPath);
+        }
+        
+        public static void RemoveAsset(string path, string assetName)
+        {
+            AssetDatabase.DeleteAsset($"{path}/{assetName}.asset");
         }
         
         private static List<DLSystemChoiceSaveData> CloneNodeChoices(List<DLSystemChoiceSaveData> nodeChoices)
