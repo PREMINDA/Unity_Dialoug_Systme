@@ -1,3 +1,4 @@
+using Editor.DLSystem.Utils;
 using Editor.Utils;
 using UnityEditor;
 using UnityEngine.UIElements;
@@ -11,6 +12,8 @@ namespace Editor.DLSystem.Windows
     {
         private readonly string _defaultName = "DialoguesFileName";
         private Button _button;
+        private TextField _textField; 
+        private DLSystemGraphView _graphView;
         [MenuItem("Window/DLSystem/DLSystem Graph")]
         public static void ShowExample()
         {
@@ -28,22 +31,38 @@ namespace Editor.DLSystem.Windows
         {
             Toolbar toolbar = new Toolbar();
             
-            TextField textField = DLSystemUtils.CreateTextField(_defaultName,new string[]{"dls-fileName"},"File Name :");
-            _button = DLSystemUtils.CreateButton("Save");
-            toolbar.Add(textField);
+            _textField = DLSystemUtils.CreateTextField(_defaultName,new string[]{"dls-fileName"},"File Name :");
+            _button = DLSystemUtils.CreateButton("Save",() =>Save() );
+            toolbar.Add(_textField);
             toolbar.Add(_button);
             StyleSheet styleSheet1 =
                 (StyleSheet)EditorGUIUtility.Load(
                     "DLSystem/DLSystemToolBar.uss");
             toolbar.styleSheets.Add(styleSheet1);
             rootVisualElement.Add(toolbar);
-        }   
+        }
+
+        private void Save()
+        {
+            if (string.IsNullOrEmpty(_textField.value))
+            {
+                EditorUtility.DisplayDialog(
+                    "Invalid File Name",
+                    "Please Ensure the File Name",
+                    "OK"
+                    );
+                return;
+            }
+
+            DLSystemIOUtils.Initialize(_textField.value,_graphView);
+            DLSystemIOUtils.Save();
+        }
 
         private void AddGraphView() 
         {
-            DLSystemGraphView graphView = new DLSystemGraphView();
-            graphView.StretchToParentSize();
-            rootVisualElement.Add(graphView);
+            _graphView = new DLSystemGraphView();
+            _graphView.StretchToParentSize();
+            rootVisualElement.Add(_graphView);
         }
         
     }
