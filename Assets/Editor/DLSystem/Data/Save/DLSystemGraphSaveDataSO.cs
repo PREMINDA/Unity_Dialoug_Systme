@@ -19,5 +19,7 @@ namespace Editor.DLSystem.Data.Save
             Groups = new List<DLSystemGroupSaveData>();
             Nodes = new List<DLSystemNodeSaveData>();
         }
+        
+        
     }
 }

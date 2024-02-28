@@ -522,5 +522,15 @@ namespace Editor.DLSystem.Windows
             }
         }
 
+        public void ClearGraph()
+        {
+            graphElements.ForEach(RemoveElement);
+            
+            _groups.Clear();
+            _groupNode.Clear();
+            _unGroupNode.Clear();
+            
+        }
+
     }
 }

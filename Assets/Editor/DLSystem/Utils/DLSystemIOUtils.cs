@@ -43,11 +43,12 @@ namespace Editor.DLSystem.Utils
         {
             CreateDefaultFolders();
             GetElementFromGraphView();
-            DLSystemGraphSaveDataSO graphData = CreateAsset<DLSystemGraphSaveDataSO>("Assets/Editor/DialogueSystem/Graphs", $"{_graphFileName}Graph");
+            DLSystemGraphSaveDataSO graphData = CreateAsset<DLSystemGraphSaveDataSO>("Assets/Editor/DLSystem/Graphs", $"{_graphFileName}Graph");
             graphData.Initialize(_graphFileName);
             DLSystemContainerSO dialogueContainer = CreateAsset<DLSystemContainerSO>(_containerFolderPath, _graphFileName);
             dialogueContainer.Initialize(_graphFileName);
             SaveGroups(graphData,dialogueContainer);
+            SaveNodes(graphData, dialogueContainer);
             
             SaveAsset(graphData);
             SaveAsset(dialogueContainer);
@@ -308,6 +309,28 @@ namespace Editor.DLSystem.Utils
                 }
 
             });
+        }
+
+        #endregion
+
+        #region Load Utils
+
+        public static void Load()
+        {
+            DLSystemGraphSaveDataSO saveDataSo = LoadAsset<DLSystemGraphSaveDataSO>("Assets/Editor/DLSystem/Graphs",_graphFileName);
+            
+            if (saveDataSo == null)
+            {
+                EditorUtility.DisplayDialog(
+                    "Could not find the file!",
+                    "The file at the following path could not be found:\n\n" +
+                    $"\"Assets/Editor/DialogueSystem/Graphs/{_graphFileName}\".\n\n" +
+                    "Make sure you chose the right file and it's placed at the folder path mentioned above.",
+                    "Thanks!"
+                );
+
+                return;
+            }
         }
 
         #endregion
