@@ -28,13 +28,14 @@ namespace Editor.DLSystem.Elements
         
         
         protected DLSystemNode()
-        { 
+        {
             
         }
-        protected DLSystemNode(DLSystemGraphView dlSystemGraphView,Vector2 position)
+        protected DLSystemNode(DLSystemGraphView dlSystemGraphView,Vector2 position,string name = "DialogueName")
         {
             ID = Guid.NewGuid().ToString();
             DLSystemGraphView = dlSystemGraphView;
+            DialogueNodeName = name;
             ColorUtility.TryParseHtmlString( "#1d1d33" , out _styleBackgroundColor );
             IsGoingToDelete = false;
             Initialize(position);
@@ -42,7 +43,6 @@ namespace Editor.DLSystem.Elements
 
         private void Initialize(Vector2 position)
         {
-            DialogueNodeName = "DialogueName";
             Choices = new List<DLSystemChoiceSaveData>();
             Text = "Init Text.";
             SetPosition(new Rect(position,Vector2.zero));

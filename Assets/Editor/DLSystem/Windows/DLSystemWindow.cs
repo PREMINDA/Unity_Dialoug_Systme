@@ -43,6 +43,7 @@ namespace Editor.DLSystem.Windows
             toolbar.Add(_textField);
             toolbar.Add(_button);
             toolbar.Add(clearButton);
+            toolbar.Add(resetButton);
             toolbar.Add(loadButton);
             StyleSheet styleSheet1 =
                 (StyleSheet)EditorGUIUtility.Load(

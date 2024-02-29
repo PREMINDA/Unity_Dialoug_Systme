@@ -15,8 +15,9 @@ namespace Editor.DLSystem.Elements
         int _nodeIndex = 1;
         public DLSystemMultiChoiceNode(
             DLSystemGraphView dlSystemGraphView,
-            Vector2 position
-            ) :base(dlSystemGraphView, position)
+            Vector2 position,
+            string name
+            ) :base(dlSystemGraphView, position,name)
         {
             DLSystemType = DLSystemType.MultipleChoice;
             Choices.Add(new DLSystemChoiceSaveData(){Text = "New Choice"});

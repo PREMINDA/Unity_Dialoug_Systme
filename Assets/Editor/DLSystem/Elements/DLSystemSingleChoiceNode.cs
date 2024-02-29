@@ -11,8 +11,9 @@ namespace Editor.DLSystem.Elements
     {
         public DLSystemSingleChoiceNode(
             DLSystemGraphView dlSystemGraphView,
-            Vector2 position
-            ):base(dlSystemGraphView,position)
+            Vector2 position,
+            string name
+            ):base(dlSystemGraphView,position,name)
         {
             DLSystemType = DLSystemType.SingleChoice;
             Choices.Add(new DLSystemChoiceSaveData(){Text = "New choice1"});

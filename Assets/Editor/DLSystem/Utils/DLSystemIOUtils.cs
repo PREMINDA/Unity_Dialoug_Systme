@@ -10,6 +10,7 @@ using UnityEngine;
 using DLSystem.Scripts.ScriptableObjects;
 using Editor.DLSystem.Data.Save;
 using SerializableDictionary;
+using UnityEditor.Experimental.GraphView;
 
 namespace Editor.DLSystem.Utils
 {
@@ -25,6 +26,9 @@ namespace Editor.DLSystem.Utils
         private static List<DLSystemNode> _nodes;
         private static List<DLSystemGroup> _groups;
         
+        private static Dictionary<string, DLSystemGroup> _loadedGroups;
+        private static Dictionary<string, DLSystemNode> _loadedNodes;
+        
 
         public static void Initialize(string fileName,DLSystemGraphView dlSystemGraphView)
         {
@@ -35,6 +39,7 @@ namespace Editor.DLSystem.Utils
             _dlSystemGraphView = dlSystemGraphView;
             _nodes = new List<DLSystemNode>();
             _groups = new List<DLSystemGroup>();
+            _loadedGroups = new Dictionary<string, DLSystemGroup>();
         }
 
         #region save data
@@ -330,6 +335,80 @@ namespace Editor.DLSystem.Utils
                 );
 
                 return;
+            }
+            
+            DLSystemWindow.UpdateFileName(saveDataSo.FileName);
+
+            LoadGroups(saveDataSo.Groups);
+            LoadNodes(saveDataSo.Nodes);
+            LoadNodesConnections();
+        }
+
+        private static void LoadNodesConnections()
+        {
+            foreach (KeyValuePair<string, DLSystemNode> loadedNode in _loadedNodes)
+            {
+                foreach (Port choicePort in loadedNode.Value.outputContainer.Children())
+                {
+                    DLSystemChoiceSaveData choiceData = (DLSystemChoiceSaveData) choicePort.userData;
+
+                    if (string.IsNullOrEmpty(choiceData.NodeID))
+                    {
+                        continue;
+                    }
+
+                    DLSystemNode nextNode = _loadedNodes[choiceData.NodeID];
+
+                    Port nextNodeInputPort = (Port) nextNode.inputContainer.Children().First();
+
+                    Edge edge = choicePort.ConnectTo(nextNodeInputPort);
+
+                    _dlSystemGraphView.AddElement(edge);
+
+                    loadedNode.Value.RefreshPorts();
+                }
+            }
+        }
+
+        private static void LoadNodes(List<DLSystemNodeSaveData> nodes)
+        {
+            foreach (DLSystemNodeSaveData nodeData in nodes)
+            {
+                List<DLSystemChoiceSaveData> choices = CloneNodeChoices(nodeData.Choices);
+
+                DLSystemNode node = _dlSystemGraphView.CreateNode(nodeData.Name, nodeData.Position, nodeData.DialogType, false);
+
+                node.ID = nodeData.ID;
+                node.Choices = choices;
+                node.Text = nodeData.Text;
+                
+
+                _dlSystemGraphView.AddElement(node);
+
+                _loadedNodes.Add(node.ID, node);
+
+                if (string.IsNullOrEmpty(nodeData.GroupId))
+                {
+                    continue;
+                }
+
+                DLSystemGroup group = _loadedGroups[nodeData.GroupId];
+
+                node.BelongGroup = group;
+
+                group.AddElement(node);
+            }
+        }
+
+        private static void LoadGroups(List<DLSystemGroupSaveData> groups)
+        {
+            foreach (DLSystemGroupSaveData groupData in groups)
+            {
+                DLSystemGroup group = _dlSystemGraphView.CreateGroup(groupData.Name, groupData.Position);
+
+                group.ID = groupData.ID;
+
+                _loadedGroups.Add(group.ID, group);
             }
         }
 

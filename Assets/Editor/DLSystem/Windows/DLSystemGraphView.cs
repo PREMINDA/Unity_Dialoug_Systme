@@ -76,17 +76,17 @@ namespace Editor.DLSystem.Windows
 
         #region CreateNode
 
-        public DLSystemNode CreateNode(Vector2 contextPosition,DLSystemType dlSystemType)
+        public DLSystemNode CreateNode(string nodeName,Vector2 contextPosition,DLSystemType dlSystemType,bool shouldDraw = true)
         {
-            return CreateNode(dlSystemType, contextPosition);
+            return CreateNode(dlSystemType, contextPosition,nodeName);
         }
 
-        private DLSystemNode CreateNode(DLSystemType dlSystemType,Vector2 position)
+        private DLSystemNode CreateNode(DLSystemType dlSystemType,Vector2 position,string nodeName = "")
         {
             
             DLSystemNode dlSystemNode = dlSystemType == DLSystemType.SingleChoice?
-                new DLSystemSingleChoiceNode(this,position):
-                new DLSystemMultiChoiceNode(this,position);
+                new DLSystemSingleChoiceNode(this,position,nodeName):
+                new DLSystemMultiChoiceNode(this,position,nodeName);
             AddElement(dlSystemNode);
 
             AddUnGroupNode(dlSystemNode);
@@ -155,7 +155,7 @@ namespace Editor.DLSystem.Windows
 
         #region CreateGroup
         
-        private Group CreateGroup(string title,Vector2 position)
+        public DLSystemGroup CreateGroup(string title,Vector2 position)
         {
             DLSystemGroup group = new DLSystemGroup(title, position);
             AddGroup(group);
