@@ -219,7 +219,7 @@ namespace Editor.DLSystem.Utils
         {
             DLSystemDialogueSO dialogue;
 
-            if (node.BelongGroup == null)
+            if (node.BelongGroup != null)
             {
                 dialogue = CreateAsset<DLSystemDialogueSO>($"{_containerFolderPath}/Groups/{node.BelongGroup.title}/Dialogues", node.DialogueNodeName);
                 if (!dialogueContainer.GroupDialogues.Contains(_createdDialogueGroups[((DLSystemGroup)node.BelongGroup).ID]))
