@@ -1,9 +1,11 @@
+using System.Collections.Generic;
 using DLSystem.Enums;
 using Editor.DLSystem.Data.Save;
 using Editor.DLSystem.Windows;
 using Editor.Utils;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Editor.DLSystem.Elements
 {
@@ -12,11 +14,20 @@ namespace Editor.DLSystem.Elements
         public DLSystemSingleChoiceNode(
             DLSystemGraphView dlSystemGraphView,
             Vector2 position,
-            string name
+            string name,
+            List<DLSystemChoiceSaveData> choices
             ):base(dlSystemGraphView,position,name)
         {
             DLSystemType = DLSystemType.SingleChoice;
-            Choices.Add(new DLSystemChoiceSaveData(){Text = "New choice1"});
+            if (choices == null)
+            {
+                Choices.Add(new DLSystemChoiceSaveData(){Text = "New Choice"});
+            }
+            else
+            {
+                Choices = choices;
+            }
+
             Draw();
             
         }
@@ -28,8 +39,10 @@ namespace Editor.DLSystem.Elements
             foreach (DLSystemChoiceSaveData choice in Choices)
             {
                 Port choicePort = this.CreatePort(Orientation.Horizontal, Direction.Output,
-                    Port.Capacity.Single, typeof(bool),choice.Text,new string[]{});
-                outputContainer.Add(choicePort);
+                    Port.Capacity.Single, typeof(bool),"Choice",new string[]{});
+                choicePort.userData = choice;
+                VisualElement visualElement = DLSystemUtils.CreateVisualElement(choicePort);
+                outputContainer.Add(visualElement);
             }
             RefreshExpandedState();
         }

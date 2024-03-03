@@ -56,7 +56,7 @@ namespace Editor.DLSystem.Windows
         {
             ContextualMenuManipulator menuManipulator = new ContextualMenuManipulator(
                 menuEvent=>menuEvent.menu.AppendAction("Create Group",
-                    actionEvent=>AddElement(CreateGroup("Dialog Group",actionEvent.eventInfo.localMousePosition))
+                    actionEvent=>AddElement(CreateGroup("Dialog Group",actionEvent.eventInfo.localMousePosition,false))
                 )
             );
             return menuManipulator;
@@ -76,18 +76,18 @@ namespace Editor.DLSystem.Windows
 
         #region CreateNode
 
-        public DLSystemNode CreateNode(string nodeName,Vector2 contextPosition,DLSystemType dlSystemType,bool shouldDraw = true)
+        public DLSystemNode CreateNode(string nodeName, Vector2 contextPosition, DLSystemType dlSystemType,List<DLSystemChoiceSaveData> choices,
+            bool shouldDraw = true)
         {
-            return CreateNode(dlSystemType, contextPosition,nodeName);
+            return CreateNode(dlSystemType, contextPosition,choices, nodeName);
         }
-
-        private DLSystemNode CreateNode(DLSystemType dlSystemType,Vector2 position,string nodeName = "")
+        
+        private DLSystemNode CreateNode(DLSystemType dlSystemType,Vector2 position,List<DLSystemChoiceSaveData> choices= null, string nodeName = null )
         {
             
             DLSystemNode dlSystemNode = dlSystemType == DLSystemType.SingleChoice?
-                new DLSystemSingleChoiceNode(this,position,nodeName):
-                new DLSystemMultiChoiceNode(this,position,nodeName);
-            AddElement(dlSystemNode);
+                new DLSystemSingleChoiceNode(this,position,nodeName,choices):
+                new DLSystemMultiChoiceNode(this,position,nodeName,choices);
 
             AddUnGroupNode(dlSystemNode);
             
@@ -155,10 +155,14 @@ namespace Editor.DLSystem.Windows
 
         #region CreateGroup
         
-        public DLSystemGroup CreateGroup(string title,Vector2 position)
+        public DLSystemGroup CreateGroup(string title,Vector2 position,bool isLoad)
         {
-            DLSystemGroup group = new DLSystemGroup(title, position);
+            DLSystemGroup group = new DLSystemGroup(title, position, isLoad);
             AddGroup(group);
+            if (isLoad)
+            {
+                AddElement(group);
+            }
             return group;
         }
 
@@ -413,19 +417,22 @@ namespace Editor.DLSystem.Windows
         {
             graphViewChanged = (changes) =>
             {
+                
                 if (changes.edgesToCreate != null)
                 {
+       
                     foreach (Edge edge in changes.edgesToCreate)
                     {
                         DLSystemNode nextNode = (DLSystemNode) edge.input.node;
 
                         DLSystemChoiceSaveData choiceData = (DLSystemChoiceSaveData) edge.output.userData;
-                        choiceData.NodeID = nextNode.ID;
+                        choiceData.NextNodeID = nextNode.ID;
                     }
                 }
 
                 if (changes.elementsToRemove != null)
                 {
+                    
                     Type edgeType = typeof(Edge);
 
                     foreach (GraphElement element in changes.elementsToRemove)
@@ -438,7 +445,7 @@ namespace Editor.DLSystem.Windows
                         Edge edge = (Edge) element;
 
                         DLSystemChoiceSaveData choiceData = (DLSystemChoiceSaveData) edge.output.userData;
-                        choiceData.NodeID = "";
+                        choiceData.NextNodeID = "";
                     }
                 }
 

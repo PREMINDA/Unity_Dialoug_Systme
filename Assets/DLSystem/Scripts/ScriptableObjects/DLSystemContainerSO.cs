@@ -13,7 +13,6 @@ namespace DLSystem.Scripts.ScriptableObjects
         public void Initialize(string fileName)
         {
             FileName = fileName;
-
             GroupDialogues = new SerializableDictionary<DLSystemDialogueGroupSO, List<DLSystemDialogueSO>>();
             UngroupedDialogues = new List<DLSystemDialogueSO>();
         }

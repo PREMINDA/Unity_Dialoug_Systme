@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7a38cdb4610d44f09d97fcae33fb98a1, type: 3}
-  m_Name: DialogueName
+  m_Name: DialogueName2
   m_EditorClassIdentifier: 
-  <DialogueName>k__BackingField: DialogueName
+  <DialogueName>k__BackingField: DialogueName2
   <Text>k__BackingField: Init Text.
   <Choices>k__BackingField:
   - <Text>k__BackingField: New Choice
     <NextDialogue>k__BackingField: {fileID: 0}
   <DialogueType>k__BackingField: 1
-  <IsStartingDialogue>k__BackingField: 1
+  <IsStartingDialogue>k__BackingField: 0

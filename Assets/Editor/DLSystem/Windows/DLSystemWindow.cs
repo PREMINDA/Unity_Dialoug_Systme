@@ -1,3 +1,4 @@
+using System.IO;
 using Editor.DLSystem.Utils;
 using Editor.Utils;
 using PlasticGui;
@@ -66,6 +67,9 @@ namespace Editor.DLSystem.Windows
             }
 
             Clear();
+            
+            DLSystemIOUtils.Initialize( Path.GetFileNameWithoutExtension(filePath),_graphView);
+            DLSystemIOUtils.Load();
 
         }
         

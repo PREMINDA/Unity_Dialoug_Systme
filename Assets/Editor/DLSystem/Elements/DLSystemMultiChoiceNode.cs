@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using DLSystem.Enums;
 using Editor.DLSystem.Data.Save;
 using Editor.DLSystem.Entity;
@@ -16,11 +18,19 @@ namespace Editor.DLSystem.Elements
         public DLSystemMultiChoiceNode(
             DLSystemGraphView dlSystemGraphView,
             Vector2 position,
-            string name
-            ) :base(dlSystemGraphView, position,name)
+            string name,
+            List<DLSystemChoiceSaveData> choices
+            ) :base(dlSystemGraphView,position,name)
         {
             DLSystemType = DLSystemType.MultipleChoice;
-            Choices.Add(new DLSystemChoiceSaveData(){Text = "New Choice"});
+            if (choices == null)
+            {
+                Choices.Add(new DLSystemChoiceSaveData(){Text = "New Choice"});
+            }
+            else
+            {
+                Choices = choices;
+            }
             Draw();
         }
 
@@ -32,12 +42,13 @@ namespace Editor.DLSystem.Elements
             {
                 DLSystemChoiceSaveData choiceData = new DLSystemChoiceSaveData()
                 {
-                    Text = "New Choice"
+                    Text = "New Choice",
+                    NextNodeID = ""
                 };
 
                 Choices.Add(choiceData);
                 Port choicePort = CreatePort(choiceData,_nodeIndex++);    
-                VisualElement visualElement = CreateVisualElement(choicePort);
+                VisualElement visualElement = DLSystemUtils.CreateVisualElement(choicePort);
                 outputContainer.Add(visualElement);
                 RefreshExpandedState();
             });
@@ -45,7 +56,7 @@ namespace Editor.DLSystem.Elements
             foreach (DLSystemChoiceSaveData choice in Choices)
             {
                 Port choicePort = CreatePort(choice,_nodeIndex++);
-                VisualElement visualElement = CreateVisualElement(choicePort);
+                VisualElement visualElement = DLSystemUtils.CreateVisualElement(choicePort);
                 outputContainer.Add(visualElement);
                 
             }
@@ -80,17 +91,7 @@ namespace Editor.DLSystem.Elements
             return choicePort;
         }
 
-        private VisualElement CreateVisualElement(Port choicePort)
-        {
-            VisualElement visualElement = new DLSystemMultiPortContainerBox(choicePort);
-            DLSystemChoiceSaveData choiceData = (DLSystemChoiceSaveData)choicePort.userData;
-            TextField textField = DLSystemUtils.CreateTextField(choiceData.Text, new string [] {"choice-text-field"},
-                onChange:callback=>choiceData.Text = callback.newValue);
-            visualElement.AddToClassList("choice-box");
-            visualElement.Add(choicePort);
-            visualElement.Add(textField);
-            return visualElement;
-        }
+        
 
     }
 }

@@ -1,6 +1,8 @@
 
 using System;
+using Editor.DLSystem.Data.Save;
 using Editor.DLSystem.Elements;
+using Editor.DLSystem.Entity;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
 using Button = UnityEngine.UIElements.Button;
@@ -58,6 +60,18 @@ namespace Editor.Utils
                 inputPort.AddToClassList(s);
             }
             return inputPort;
+        }
+        
+        public static VisualElement CreateVisualElement(Port choicePort,string lable = null)
+        {
+            VisualElement visualElement = new DLSystemMultiPortContainerBox(choicePort);
+            DLSystemChoiceSaveData choiceData = (DLSystemChoiceSaveData)choicePort.userData;
+            TextField textField = CreateTextField(choiceData.Text,new string [] {"choice-text-field"},lable,
+                onChange:callback=>choiceData.Text = callback.newValue);
+            visualElement.AddToClassList("choice-box");
+            visualElement.Add(choicePort);
+            visualElement.Add(textField);
+            return visualElement;
         }
     }
 }

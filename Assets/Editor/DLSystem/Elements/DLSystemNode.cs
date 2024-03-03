@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO.Ports;
 using System.Linq;
 using DLSystem.Enums;
 using Editor.DLSystem.Data.Save;
@@ -31,8 +32,9 @@ namespace Editor.DLSystem.Elements
         {
             
         }
-        protected DLSystemNode(DLSystemGraphView dlSystemGraphView,Vector2 position,string name = "DialogueName")
+        protected DLSystemNode(DLSystemGraphView dlSystemGraphView,Vector2 position,string name)
         {
+            if (string.IsNullOrEmpty(name)) name = "DialogueName";
             ID = Guid.NewGuid().ToString();
             DLSystemGraphView = dlSystemGraphView;
             DialogueNodeName = name;
@@ -125,6 +127,20 @@ namespace Editor.DLSystem.Elements
         {
             
             mainContainer.style.backgroundColor = _styleBackgroundColor;
+        }
+
+        public List<Port> getPort()
+        {
+            List<Port> ports = new List<Port>();
+            foreach (VisualElement visualElement in outputContainer.Children())
+            {
+                foreach (var element in visualElement.Children()) if (element is Port)
+                {
+                    ports.Add((Port)element);
+                }
+            }
+
+            return ports;
         }
     }
 }

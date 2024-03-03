@@ -11,6 +11,7 @@ using DLSystem.Scripts.ScriptableObjects;
 using Editor.DLSystem.Data.Save;
 using SerializableDictionary;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine.UIElements;
 
 namespace Editor.DLSystem.Utils
 {
@@ -39,6 +40,7 @@ namespace Editor.DLSystem.Utils
             _dlSystemGraphView = dlSystemGraphView;
             _nodes = new List<DLSystemNode>();
             _groups = new List<DLSystemGroup>();
+            _loadedNodes = new Dictionary<string, DLSystemNode>();
             _loadedGroups = new Dictionary<string, DLSystemGroup>();
         }
 
@@ -217,7 +219,7 @@ namespace Editor.DLSystem.Utils
         {
             DLSystemDialogueSO dialogue;
 
-            if (node.BelongGroup != null)
+            if (node.BelongGroup == null)
             {
                 dialogue = CreateAsset<DLSystemDialogueSO>($"{_containerFolderPath}/Groups/{node.BelongGroup.title}/Dialogues", node.DialogueNodeName);
                 if (!dialogueContainer.GroupDialogues.Contains(_createdDialogueGroups[((DLSystemGroup)node.BelongGroup).ID]))
@@ -258,7 +260,7 @@ namespace Editor.DLSystem.Utils
             {
                 DLSystemDialogueChoiceData choiceData = new DLSystemDialogueChoiceData()
                 {
-                    Text = nodeChoice.Text
+                    Text = nodeChoice.Text,
                 };
 
                 dialogueChoices.Add(choiceData);
@@ -345,28 +347,33 @@ namespace Editor.DLSystem.Utils
         }
 
         private static void LoadNodesConnections()
-        {
+        { 
             foreach (KeyValuePair<string, DLSystemNode> loadedNode in _loadedNodes)
             {
-                foreach (Port choicePort in loadedNode.Value.outputContainer.Children())
+                List<Port> choicePorts = loadedNode.Value.getPort();
+                
+                if(choicePorts.Count <= 0) continue;
+                
+                foreach (Port choicePort in choicePorts)
                 {
                     DLSystemChoiceSaveData choiceData = (DLSystemChoiceSaveData) choicePort.userData;
-
-                    if (string.IsNullOrEmpty(choiceData.NodeID))
+                
+                    if (string.IsNullOrEmpty(choiceData.NextNodeID))
                     {
                         continue;
                     }
-
-                    DLSystemNode nextNode = _loadedNodes[choiceData.NodeID];
-
+                
+                    DLSystemNode nextNode = _loadedNodes[choiceData.NextNodeID];
+                
                     Port nextNodeInputPort = (Port) nextNode.inputContainer.Children().First();
-
+                
                     Edge edge = choicePort.ConnectTo(nextNodeInputPort);
-
+                
                     _dlSystemGraphView.AddElement(edge);
-
+                
                     loadedNode.Value.RefreshPorts();
                 }
+
             }
         }
 
@@ -376,7 +383,7 @@ namespace Editor.DLSystem.Utils
             {
                 List<DLSystemChoiceSaveData> choices = CloneNodeChoices(nodeData.Choices);
 
-                DLSystemNode node = _dlSystemGraphView.CreateNode(nodeData.Name, nodeData.Position, nodeData.DialogType, false);
+                DLSystemNode node = _dlSystemGraphView.CreateNode(nodeData.Name, nodeData.Position, nodeData.DialogType,choices,false);
 
                 node.ID = nodeData.ID;
                 node.Choices = choices;
@@ -404,10 +411,10 @@ namespace Editor.DLSystem.Utils
         {
             foreach (DLSystemGroupSaveData groupData in groups)
             {
-                DLSystemGroup group = _dlSystemGraphView.CreateGroup(groupData.Name, groupData.Position);
+                DLSystemGroup group = _dlSystemGraphView.CreateGroup(groupData.Name, groupData.Position,true);
 
                 group.ID = groupData.ID;
-
+                _dlSystemGraphView.AddElement(group);
                 _loadedGroups.Add(group.ID, group);
             }
         }
@@ -440,12 +447,12 @@ namespace Editor.DLSystem.Utils
                 {
                     DLSystemChoiceSaveData nodeChoice = node.Choices[choiceIndex];
 
-                    if (string.IsNullOrEmpty(nodeChoice.NodeID))
+                    if (string.IsNullOrEmpty(nodeChoice.NextNodeID))
                     {
                         continue;
                     }
 
-                    dialogue.Choices[choiceIndex].NextDialogue = _createdDialogues[nodeChoice.NodeID];
+                    dialogue.Choices[choiceIndex].NextDialogue = _createdDialogues[nodeChoice.NextNodeID];
 
                     SaveAsset(dialogue);
                 }
@@ -490,7 +497,7 @@ namespace Editor.DLSystem.Utils
                 DLSystemChoiceSaveData choiceData = new DLSystemChoiceSaveData()
                 {
                     Text = choice.Text,
-                    NodeID = choice.NodeID
+                    NextNodeID = choice.NextNodeID
                 };
 
                 choices.Add(choiceData);

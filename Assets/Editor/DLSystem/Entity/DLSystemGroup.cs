@@ -12,10 +12,10 @@ namespace Editor.DLSystem.Entity
         public bool IsGroupGoingToDelete { get; set; }
         public string ID { get; set; }
         public string OldTitle { get; set; }
-        public DLSystemGroup(string groupTitle, Vector2 position):base()
+        public DLSystemGroup(string groupTitle, Vector2 position, bool isLoad):base()
         {
             IsGroupGoingToDelete = false;
-            ID = Guid.NewGuid().ToString();
+            if(!isLoad) ID = Guid.NewGuid().ToString();
             title = OldTitle = groupTitle;
             SetPosition(new Rect(position,Vector2.zero));
             _defaultCorderColor = contentContainer.style.borderBottomColor.value;
